@@ -1,0 +1,54 @@
+#cloud-config
+
+# Upgrade packages
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+# Install packages
+packages:
+  - bind9
+
+# Write files
+write_files:
+  - owner: root:root
+    path: /etc/bind/named.conf.options
+    content: |
+      acl goodclients {
+          10.0.0.0/8;
+          172.16.0.0/12;
+          192.168.0.0/16;
+          localhost;
+          localnets;
+      };
+      options {
+              directory "/var/cache/bind";
+              allow-query { goodclients; };
+              forwarders {
+                  168.63.129.16;
+              };
+              forward only;
+              dnssec-enable yes;
+              dnssec-validation yes;
+              auth-nxdomain no;    # conform to RFC1035
+              listen-on { any; };
+      };
+      zone "azure.example.com" {
+          type forward;
+          forward only;
+          forwarders {
+              168.63.129.16;
+          };
+      };
+      zone "example.com" {
+          type forward;
+          forward only;
+          forwarders {
+              1.1.1.1;
+              1.0.0.1;
+              2606:4700:4700::1111;
+              2606:4700:4700::1001;
+          };
+      };
+runcmd:
+  - service bind9 restart

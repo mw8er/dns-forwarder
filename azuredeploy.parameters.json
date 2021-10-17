@@ -1,0 +1,12 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefix": {
+            "value": "mwa-dnsforwarder"
+        },
+        "ssh-publicKey": {
+            "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6yEPMOTIcgM0EF4iDARuSCH4PSpk2tEk7GBZQSxOH5qXIolDNCivr5dOeE+YlMt7dDDLA8RIWxMDgLUiYsKQYwDT5FE8QIJkJFJjWxLPpqdJ+gQ1wgNEP75HOW0+LHl/mOv8rHJFJ6kORFo0PYSiUcnum7FwSnZ/Ys4JnZjkjvVFfeboJxIXH6E8kjlFavtr0/Dy+i/ofVa8DuAPMJFuMb71xhd4rZZK0bZCUMUiD0+pT/teu8mwshgwn/LoqqwW/ECfvjRb7ZOOo8kCGjheYaLJyBUVWoET103DTqpnhzslluVRAhRCiLWF1u3T1NIS/0jWcdBW3E2/4vsG+yY5z"
+        }
+    }
+}
