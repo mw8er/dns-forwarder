@@ -1,6 +1,6 @@
 # DNS Forwarder VM
 
-[![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fazuredeploy.json) 
+[![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy.json) 
 
 Inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder)
 
