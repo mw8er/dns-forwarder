@@ -213,8 +213,7 @@
                         }
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
+                    "allowExtensionOperations": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -277,8 +276,7 @@
                         }
                     },
                     "secrets": [],
-                    "allowExtensionOperations": true,
-                    "requireGuestProvisionSignal": true
+                    "allowExtensionOperations": true
                 },
                 "networkProfile": {
                     "networkInterfaces": [
