@@ -38,7 +38,7 @@
         "testSubnetName": "test-subnet",
         "testSubnetAddressPrefix": "192.168.86.16/28",
         "testIPv4": "192.168.86.20",
-        "customData": "'#include\nhttps://raw.githubusercontent.com/mw8er/dns-forwarder/cloud-init.yaml",
+        "customData": "'#include\nhttps://raw.githubusercontent.com/mw8er/dns-forwarder/main/cloud-init.yaml",
         "dnsZone": "azure.example.com"
     },
     "resources": [
