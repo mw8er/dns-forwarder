@@ -185,8 +185,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', variables('dnsOsDiskName'))]"
+                            "storageAccountType": "Premium_LRS"
                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
@@ -251,8 +250,7 @@
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
-                            "storageAccountType": "Premium_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', variables('testOsDiskName'))]"
+                            "storageAccountType": "Premium_LRS"
                         },
                         "deleteOption": "Detach",
                         "diskSizeGB": 30
