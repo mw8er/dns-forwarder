@@ -161,6 +161,69 @@
             }
         },
         {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('dnsVnetName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('dnsVnetAddressPrefix')]"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": [
+                        "[variables('dnsIPv4')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('dnsSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('dnsSubnetAddressPrefix')]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('testVnetName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('testVnetAddressPrefix')]"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": [
+                        "[variables('dnsIPv4')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('testSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('testSubnetAddressPrefix')]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+        {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2021-03-01",
             "name": "[variables('dnsVmName')]",
@@ -405,67 +468,7 @@
                 }
             }
         },
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-11-01",
-            "name": "[variables('dnsVnetName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('dnsVnetAddressPrefix')]"
-                    ]
-                },
-                "dhcpOptions": {
-                    "dnsServers": [
-                        "[variables('dnsIPv4')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[variables('dnsSubnetName')]",
-                        "properties": {
-                            "addressPrefix": "[variables('dnsSubnetAddressPrefix')]",
-                            "delegations": [],
-                            "privateEndpointNetworkPolicies": "Enabled",
-                            "privateLinkServiceNetworkPolicies": "Enabled"
-                        }
-                    }
-                ],
-                "enableDdosProtection": false
-            }
-        },
 
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-11-01",
-            "name": "[variables('testVnetName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('testVnetAddressPrefix')]"
-                    ]
-                },
-                "dhcpOptions": {
-                    "dnsServers": [
-                        "[variables('dnsIPv4')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[variables('testSubnetName')]",
-                        "properties": {
-                            "addressPrefix": "[variables('testSubnetAddressPrefix')]",
-                            "delegations": [],
-                            "privateEndpointNetworkPolicies": "Enabled",
-                            "privateLinkServiceNetworkPolicies": "Enabled"
-                        }
-                    }
-                ],
-                "enableDdosProtection": false
-            }
-        },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2020-11-01",
