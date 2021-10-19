@@ -24,8 +24,6 @@
         "testPipName": "[concat(variables('testPrefix'), '-public-ip') ]",
         "dnsNicName": "[concat(variables('dnsPrefix'), '-nic') ]",
         "testNicName": "[concat(variables('testPrefix'), '-nic') ]",
-        "dnsOsDiskName": "[concat(variables('dnsPrefix'), '-os-disk') ]",
-        "testOsDiskName": "[concat(variables('testPrefix'), '-os-disk') ]",
         "dnsNsgName": "[concat(variables('dnsPrefix'), '-nsg') ]",
         "testNsgName": "[concat(variables('testPrefix'), '-nsg') ]",
         "dnsVnetName": "[concat(variables('dnsPrefix'), '-vnet') ]",
@@ -216,7 +214,7 @@
                         "offer": "0001-com-ubuntu-server-focal",
                         "sku": "20_04-lts",
                         "version": "latest"
-                    },
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -267,7 +265,7 @@
                         "offer": "0001-com-ubuntu-server-focal",
                         "sku": "20_04-lts",
                         "version": "latest"
-                    },
+                    }
                 },
                 "networkProfile": {
                     "networkInterfaces": [
@@ -495,6 +493,6 @@
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('testNsgName'))]"
                 }
             }
-        },
+        }
     ]
 }
