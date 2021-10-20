@@ -372,7 +372,7 @@
         {
             "type": "Microsoft.Network/privateDnsZones/A",
             "apiVersion": "2018-09-01",
-            "name": "[concat(variables('dnsZone'), '/dns')]",
+            "name": "[concat(variables('dnsZone'), '/dns1')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/privateDnsZones', variables('dnsZone'))]"
             ],
@@ -388,7 +388,7 @@
         {
             "type": "Microsoft.Network/privateDnsZones/A",
             "apiVersion": "2018-09-01",
-            "name": "[concat(variables('dnsZone'), '/dns')]",
+            "name": "[concat(variables('dnsZone'), '/dns2')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/privateDnsZones', variables('dnsZone'))]"
             ],
