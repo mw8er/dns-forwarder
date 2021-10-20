@@ -14,7 +14,11 @@
         "testVnetName": "[concat(variables('testPrefix'), '-vnet') ]",
         "dnsIPv4": "192.168.86.4",
         "dnsVnetAddressPrefix": "192.168.86.0/28",
+        "dnsSubnetName": "dns-subnet",
+        "dnsSubnetAddressPrefix": "192.168.86.0/28",
         "testVnetAddressPrefix": "192.168.86.16/28",
+        "testSubnetName": "test-subnet",
+        "testSubnetAddressPrefix": "192.168.86.16/28",
         "location": "[resourceGroup().location]"
     },
     "resources": [
@@ -29,6 +33,17 @@
                         "[variables('dnsVnetAddressPrefix')]"
                     ]
                 },
+                "subnets": [
+                    {
+                        "name": "[variables('dnsSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('dnsSubnetAddressPrefix')]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
                 "dhcpOptions": {
                     "dnsServers": [
                         "[variables('dnsIPv4')]"
@@ -48,6 +63,17 @@
                         "[variables('testVnetAddressPrefix')]"
                     ]
                 },
+                "subnets": [
+                    {
+                        "name": "[variables('testSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('testSubnetAddressPrefix')]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
                 "dhcpOptions": {
                     "dnsServers": [
                         "[variables('dnsIPv4')]"
