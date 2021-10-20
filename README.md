@@ -2,10 +2,12 @@
 
 ## Step 1
 [![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy-1.json) 
+
 Deploy virtual machines (dns-forwarder and test) with all the required resources into two virtual networks. Setup a private DNS zone with entries for the virtual machines.
 
 ## Step 2
 [![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy-2.json) 
+
 Adjust the virtual networks to use the dns-forwarder virtual machine as dns server.
 
 Why two steps? When using the new dns-forwarder vm as dns server from the beginning, the setup of the dns-forwarder fails.
