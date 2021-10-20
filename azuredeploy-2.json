@@ -12,7 +12,8 @@
         "testPrefix": "[concat(parameters('prefix'), '-test') ]",
         "dnsVnetName": "[concat(variables('dnsPrefix'), '-vnet') ]",
         "testVnetName": "[concat(variables('testPrefix'), '-vnet') ]",
-        "dnsIPv4": "192.168.86.4",
+        "dnsIP1v4": "192.168.86.4",
+        "dnsIP2v4": "192.168.86.5",
         "dnsVnetAddressPrefix": "192.168.86.0/28",
         "dnsSubnetName": "dns-subnet",
         "dnsSubnetAddressPrefix": "192.168.86.0/28",
@@ -46,7 +47,8 @@
                 ],
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[variables('dnsIPv4')]"
+                        "[variables('dnsIP1v4')]",
+                        "[variables('dnsIP2v4')]"
                     ]
                 }
             }
@@ -76,7 +78,8 @@
                 ],
                 "dhcpOptions": {
                     "dnsServers": [
-                        "[variables('dnsIPv4')]"
+                        "[variables('dnsIP1v4')]",
+                        "[variables('dnsIP2v4')]"
                     ]
                 }
             }

@@ -5,6 +5,14 @@
 
 Deploy virtual machines (dns-forwarder and test) with all the required resources into two virtual networks. Setup a private DNS zone with entries for the virtual machines.
 
+Before continuing with step 2, wait for approximately 5 minutes to ensure that the dns-forwarder vm was able to run it's setup via cloud-init.
+```
+ssh azureuser@<public-ip-of-dns-forwarder>
+sudo systemctl status bind9
+```
+
+The *bind9* service should be up and running before continuing with step 2.
+
 ## Step 2
 [![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy-2.json) 
 
@@ -14,6 +22,8 @@ Why step 2? When using the new dns-forwarder vm as dns server from the beginning
 
 ## Step 3
 Restart the virtual machines and check dns resolution.
+
+> Virtual machines within this virtual network must be restarted to utilize the updated DNS server settings.
 
 ## Details
 Inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder)
