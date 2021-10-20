@@ -10,7 +10,10 @@ Deploy virtual machines (dns-forwarder and test) with all the required resources
 
 Adjust the virtual networks to use the dns-forwarder virtual machine as dns server.
 
-Why two steps? When using the new dns-forwarder vm as dns server from the beginning, the setup of the dns-forwarder fails.
+Why step 2? When using the new dns-forwarder vm as dns server from the beginning, the setup of the dns-forwarder fails.
+
+## Step 3
+Restart the virtual machines and check dns resolution.
 
 ## Details
 Inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder)
