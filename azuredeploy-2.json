@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "prefix": {
+            "defaultValue": "mwa-dnsforwarder",
+            "type": "String"
+        }
+    },
+    "variables": {
+        "dnsPrefix": "[concat(parameters('prefix'), '-dns') ]",
+        "testPrefix": "[concat(parameters('prefix'), '-test') ]",
+        "dnsVnetName": "[concat(variables('dnsPrefix'), '-vnet') ]",
+        "testVnetName": "[concat(variables('testPrefix'), '-vnet') ]",
+        "dnsIPv4": "192.168.86.4",
+        "dnsVnetAddressPrefix": "192.168.86.0/28",
+        "testVnetAddressPrefix": "192.168.86.16/28",
+        "location": "[resourceGroup().location]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('dnsVnetName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('dnsVnetAddressPrefix')]"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": [
+                        "[variables('dnsIPv4')]"
+                    ]
+                }
+            }
+        },
+
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('testVnetName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('testVnetAddressPrefix')]"
+                    ]
+                },
+                "dhcpOptions": {
+                    "dnsServers": [
+                        "[variables('dnsIPv4')]"
+                    ]
+                }
+            }
+        }
+    ]
+}

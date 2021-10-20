@@ -9,10 +9,6 @@
         "ssh-publicKey": {
             "defaultValue": "mwa-dnsforwarder",
             "type": "String"
-        },
-        "location": {
-            "defaultValue": "[resourceGroup().location]",
-            "type": "String"
         }
     },
     "variables": {
@@ -24,6 +20,8 @@
         "testPipName": "[concat(variables('testPrefix'), '-public-ip') ]",
         "dnsNicName": "[concat(variables('dnsPrefix'), '-nic') ]",
         "testNicName": "[concat(variables('testPrefix'), '-nic') ]",
+        "dnsOsDiskName": "[concat(variables('dnsPrefix'), '-os-disk') ]",
+        "testOsDiskName": "[concat(variables('testPrefix'), '-os-disk') ]",
         "dnsNsgName": "[concat(variables('dnsPrefix'), '-nsg') ]",
         "testNsgName": "[concat(variables('testPrefix'), '-nsg') ]",
         "dnsVnetName": "[concat(variables('dnsPrefix'), '-vnet') ]",
@@ -31,20 +29,20 @@
         "dnsVnetAddressPrefix": "192.168.86.0/28",
         "dnsSubnetName": "dns-subnet",
         "dnsSubnetAddressPrefix": "192.168.86.0/28",
-        "dnsIPv4": "192.168.86.4",
         "testVnetAddressPrefix": "192.168.86.16/28",
         "testSubnetName": "test-subnet",
         "testSubnetAddressPrefix": "192.168.86.16/28",
         "testIPv4": "192.168.86.20",
         "customData": "#include\nhttps://raw.githubusercontent.com/mw8er/dns-forwarder/main/cloud-init.yaml",
-        "dnsZone": "azure.example.com"
+        "dnsZone": "azure.example.com",
+        "location": "[resourceGroup().location]"
     },
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-11-01",
             "name": "[variables('dnsNsgName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "properties": {
                 "securityRules": [
                     {
@@ -88,7 +86,7 @@
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-11-01",
             "name": "[variables('testNsgName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "properties": {
                 "securityRules": [
                     {
@@ -130,71 +128,39 @@
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-11-01",
             "name": "[variables('dnsPipName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "sku": {
-                "name": "Basic"
+                "name": "Basic",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAddressVersion": "IPv4",
                 "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
             }
         },
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-11-01",
             "name": "[variables('testPipName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "sku": {
-                "name": "Basic"
+                "name": "Basic",
+                "tier": "Regional"
             },
             "properties": {
                 "publicIPAddressVersion": "IPv4",
                 "publicIPAllocationMethod": "Dynamic",
-                "idleTimeoutInMinutes": 4
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-11-01",
-            "name": "[variables('dnsVnetName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('dnsVnetAddressPrefix')]"
-                    ]
-                },
-                "dhcpOptions": {
-                    "dnsServers": [
-                        "[variables('dnsIPv4')]"
-                    ]
-                }
-            }
-        },
-        {
-            "type": "Microsoft.Network/virtualNetworks",
-            "apiVersion": "2020-11-01",
-            "name": "[variables('testVnetName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[variables('testVnetAddressPrefix')]"
-                    ]
-                },
-                "dhcpOptions": {
-                    "dnsServers": [
-                        "[variables('dnsIPv4')]"
-                    ]
-                }
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
             }
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2021-03-01",
             "name": "[variables('dnsVmName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('dnsNicName'))]"
             ],
@@ -203,25 +169,24 @@
                     "vmSize": "Standard_DS1_v2"
                 },
                 "storageProfile": {
-                    "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
-                        }
-                    },
                     "imageReference": {
                         "publisher": "Canonical",
                         "offer": "0001-com-ubuntu-server-focal",
                         "sku": "20_04-lts",
                         "version": "latest"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('dnsNicName'))]"
-                        }
-                    ]
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[variables('dnsOsDiskName')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
                 },
                 "osProfile": {
                     "computerName": "dns",
@@ -236,8 +201,22 @@
                                     "keyData": "[parameters('ssh-publicKey')]"
                                 }
                             ]
+                        },
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault",
+                            "assessmentMode": "ImageDefault"
                         }
-                    }
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('dnsNicName'))]"
+                        }
+                    ]
                 }
             }
         },
@@ -245,7 +224,7 @@
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2021-03-01",
             "name": "[variables('testVmName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', variables('testNicName'))]"
             ],
@@ -254,25 +233,24 @@
                     "vmSize": "Standard_DS1_v2"
                 },
                 "storageProfile": {
-                    "osDisk": {
-                        "createOption": "FromImage",
-                        "managedDisk": {
-                            "storageAccountType": "Premium_LRS"
-                        }
-                    },
                     "imageReference": {
                         "publisher": "Canonical",
                         "offer": "0001-com-ubuntu-server-focal",
                         "sku": "20_04-lts",
                         "version": "latest"
-                    }
-                },
-                "networkProfile": {
-                    "networkInterfaces": [
-                        {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('testNicName'))]"
-                        }
-                    ]
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[variables('testOsDiskName')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
                 },
                 "osProfile": {
                     "computerName": "test",
@@ -286,9 +264,89 @@
                                     "keyData": "[parameters('ssh-publicKey')]"
                                 }
                             ]
+                        },
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault",
+                            "assessmentMode": "ImageDefault"
                         }
-                    }
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('testNicName'))]"
+                        }
+                    ]
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('dnsNsgName'), '/default-allow-ssh')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('dnsNsgName'))]"
+            ],
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "22",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1000,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('testNsgName'), '/default-allow-ssh')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('testNsgName'))]"
+            ],
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "22",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1000,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2020-11-01",
+            "name": "[concat(variables('dnsNsgName'), '/open-port-53')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('dnsNsgName'))]"
+            ],
+            "properties": {
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "53",
+                "sourceAddressPrefix": "*",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 1100,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
             }
         },
         {
@@ -343,7 +401,57 @@
                 }
             }
         },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('dnsVnetName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('dnsVnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('dnsSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('dnsSubnetAddressPrefix')]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "enableDdosProtection": false
+            }
+        },
 
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2020-11-01",
+            "name": "[variables('testVnetName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('testVnetAddressPrefix')]"
+                    ]
+                },
+                "subnets": [
+                    {
+                        "name": "[variables('testSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('testSubnetAddressPrefix')]",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Enabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        }
+                    }
+                ],
+                "enableDdosProtection": false
+            }
+        },
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2020-11-01",
@@ -353,6 +461,7 @@
             ],
             "properties": {
                 "addressPrefix": "[variables('dnsSubnetAddressPrefix')]",
+                "delegations": [],
                 "privateEndpointNetworkPolicies": "Enabled",
                 "privateLinkServiceNetworkPolicies": "Enabled"
             }
@@ -366,6 +475,7 @@
             ],
             "properties": {
                 "addressPrefix": "[variables('testSubnetAddressPrefix')]",
+                "delegations": [],
                 "privateEndpointNetworkPolicies": "Enabled",
                 "privateLinkServiceNetworkPolicies": "Enabled"
             }
@@ -438,7 +548,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2020-11-01",
             "name": "[variables('dnsNicName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('dnsVnetName'), variables('dnsSubnetName'))]",
@@ -449,16 +559,24 @@
                     {
                         "name": "ipconfigmwa-dnsforwarder-dns-vm",
                         "properties": {
+                            "privateIPAddress": "192.168.86.4",
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('dnsPipName'))]"
                             },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('dnsVnetName'), variables('dnsSubnetName'))]"
-                            }
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
                         }
                     }
                 ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('dnsNsgName'))]"
                 }
@@ -468,7 +586,7 @@
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2020-11-01",
             "name": "[variables('testNicName')]",
-            "location": "[parameters('location')]",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('testPipName'))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('testVnetName'), variables('testSubnetName'))]",
@@ -479,16 +597,24 @@
                     {
                         "name": "ipconfigmwa-dnsforwarder-test-vm",
                         "properties": {
+                            "privateIPAddress": "[variables('testIPv4')]",
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
                                 "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('testPipName'))]"
                             },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('testVnetName'), variables('testSubnetName'))]"
-                            }
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
                         }
                     }
                 ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
                 "networkSecurityGroup": {
                     "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('testNsgName'))]"
                 }
