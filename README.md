@@ -1,4 +1,21 @@
-# DNS Forwarder VM
+# DNS Forwarder
+
+[DNS Forwarder with Cloud-Init](cloud-init.md)
+[High Availability](high-availability.md)
+
+This template shows how to create a DNS server that forwards queries to Azure's internal DNS servers so that hostnames for VMs in the virtual network can be resolved from outside the network.
+
+As illustrated below, this is useful for doing hostname resolution between virtual networks or from on-premise machines to Azure. See [Name resolution using your own DNS server](https://azure.microsoft.com/documentation/articles/virtual-networks-name-resolution-for-vms-and-role-instances/#name-resolution-using-your-own-dns-server) for more details of how DNS resolution work in Azure.
+
+![Hybrid-scenario DNS](images/hybrid-scenario.png)
+
+In addition to that, this template also covers aspects of high availabiltiy for virtual machines.
+
+The template is inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder).
+
+For private endpoints consider reading [DNS Integration Scenarios](https://github.com/dmauser/PrivateLink/tree/master/DNS-Integration-Scenarios) by Daniel Mauser.
+
+
 
 ## Step 1
 [![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy-1.json) 
@@ -26,7 +43,7 @@ Restart the virtual machines and check dns resolution.
 > Virtual machines within this virtual network must be restarted to utilize the updated DNS server settings.
 
 ## Details
-Inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder)
+Inspired 
 
 This template shows how to create a DNS server that forwards queries to Azure's internal DNS servers so that hostnames for VMs in the virtual network can be resolved from outside the network.
 

@@ -7,11 +7,14 @@ export location="westeurope"
 export resourceGroup="${prefix}-rg"
 export dnsPrefix="${prefix}-dns"
 export testPrefix="${prefix}-test"
-export dnsVmName="${dnsPrefix}-vm"
+export dnsVm1Name="${dnsPrefix}1-vm"
+export dnsVm2Name="${dnsPrefix}2-vm"
 export testVmName="${testPrefix}-vm"
-export dnsPipName="${dnsPrefix}-public-ip"
+export dnsPip1Name="${dnsPrefix}1-public-ip"
+export dnsPip2Name="${dnsPrefix}2-public-ip"
 export testPipName="${testPrefix}-public-ip"
-export dnsOsDiskName="${dnsPrefix}-os-disk"
+export dnsOsDisk1Name="${dnsPrefix}1-os-disk"
+export dnsOsDisk2Name="${dnsPrefix}2-os-disk"
 export testOsDiskName="${testPrefix}-os-disk"
 export dnsNsgName="${dnsPrefix}-nsg"
 export testNsgName="${testPrefix}-nsg"
@@ -23,7 +26,8 @@ export image="Canonical:0001-com-ubuntu-server-focal:20_04-lts:latest"
 export dnsVnetAddressPrefix="192.168.86.0/28"
 export dnsSubnetName="dns-subnet"
 export dnsSubnetAddressPrefix="192.168.86.0/28"
-export dnsIPv4="192.168.86.4"
+export dnsIP1v4="192.168.86.4"
+export dnsIP2v4="192.168.86.5"
 export testVnetAddressPrefix="192.168.86.16/28"
 export testSubnetName="test-subnet"
 export testSubnetAddressPrefix="192.168.86.16/28"
@@ -33,26 +37,43 @@ export testIPv4="192.168.86.20"
 # az login --use-device-code
 # az account set --subscription "iptch Sandbox"
 
-az group create --name $resourceGroup --location $location
+# az group create --name $resourceGroup --location $location
 
-az vm create \
-  --resource-group $resourceGroup \
-  --name $dnsVmName \
-  --computer-name dns \
-  --os-disk-name $dnsOsDiskName \
-  --image $image \
-  --admin-username azureuser \
-  --public-ip-address $dnsPipName \
-  --nsg $dnsNsgName \
-  --vnet-name $dnsVnetName \
-  --vnet-address-prefix $dnsVnetAddressPrefix \
-  --subnet $dnsSubnetName \
-  --subnet-address-prefix $dnsSubnetAddressPrefix \
-  --public-ip-sku Basic \
-  --custom-data cloud-init.yaml \
-  --ssh-key-values ${sshKeyValues}
-  
-az vm open-port --port 53 --resource-group $resourceGroup --name $dnsVmName --priority 1100
+# az vm create \
+#   --resource-group $resourceGroup \
+#   --name $dnsVm1Name \
+#   --computer-name dns1 \
+#   --os-disk-name $dnsOsDisk1Name \
+#   --image $image \
+#   --admin-username azureuser \
+#   --public-ip-address $dnsPip1Name \
+#   --nsg $dnsNsgName \
+#   --vnet-name $dnsVnetName \
+#   --vnet-address-prefix $dnsVnetAddressPrefix \
+#   --subnet $dnsSubnetName \
+#   --subnet-address-prefix $dnsSubnetAddressPrefix \
+#   --public-ip-sku Basic \
+#   --custom-data cloud-init.yaml \
+#   --ssh-key-values ${sshKeyValues}
+
+# az vm create \
+#   --resource-group $resourceGroup \
+#   --name $dnsVm2Name \
+#   --computer-name dns2 \
+#   --os-disk-name $dnsOsDisk2Name \
+#   --image $image \
+#   --admin-username azureuser \
+#   --public-ip-address $dnsPip2Name \
+#   --nsg $dnsNsgName \
+#   --vnet-name $dnsVnetName \
+#   --vnet-address-prefix $dnsVnetAddressPrefix \
+#   --subnet $dnsSubnetName \
+#   --subnet-address-prefix $dnsSubnetAddressPrefix \
+#   --public-ip-sku Basic \
+#   --custom-data cloud-init.yaml \
+#   --ssh-key-values ${sshKeyValues}
+
+az vm open-port --port 53 --resource-group $resourceGroup --name $dnsVm1Name --priority 1100
 
 az vm create \
   --resource-group $resourceGroup \
@@ -83,8 +104,14 @@ az network private-dns link vnet create \
   --zone-name $dnsZone
 
 az network private-dns record-set a add-record \
-  --ipv4-address $dnsIPv4 \
-  --record-set-name dns \
+  --ipv4-address $dnsIP1v4 \
+  --record-set-name dns1 \
+  --resource-group $resourceGroup \
+  --zone-name $dnsZone
+
+az network private-dns record-set a add-record \
+  --ipv4-address $dnsIP2v4 \
+  --record-set-name dns2 \
   --resource-group $resourceGroup \
   --zone-name $dnsZone
 
@@ -116,10 +143,14 @@ az network vnet update \
 az network vnet update \
   --name $testVnetName \
   --resource-group $resourceGroup \
-  --dns-servers $dnsIPv4
+  --dns-servers $dnsIP1v4 $dnsIP2v4
 
 az vm restart \
-  --name $dnsVmName \
+  --name $dnsVm1Name \
+  --resource-group $resourceGroup
+
+az vm restart \
+  --name $dnsVm2Name \
   --resource-group $resourceGroup
 
 az vm restart \
