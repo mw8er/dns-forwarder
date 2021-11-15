@@ -9,7 +9,7 @@ As illustrated below, this is useful for doing hostname resolution between virtu
 
 ![Hybrid-scenario DNS](images/hybrid-scenario.png)
 
-In addition to that, this template also covers aspects of high availabiltiy for virtual machines.
+In addition to that, this template also covers aspects of high availabiltiy for virtual machines. Since the dns forwarder is used by on-prem as well as cloud resources, it is obvious to make it resilent.
 
 The template is inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder).
 
