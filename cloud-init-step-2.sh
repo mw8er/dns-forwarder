@@ -1,7 +1,6 @@
 #!/bin/sh
 
 prefix="dns-fwd-cloud-init"
-location="westeurope"
 
 . common.properties
 

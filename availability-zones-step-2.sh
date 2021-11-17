@@ -1,7 +1,6 @@
 #!/bin/sh
 
 prefix="dns-fwd-az"
-location="westeurope"
 
 . common.properties
 

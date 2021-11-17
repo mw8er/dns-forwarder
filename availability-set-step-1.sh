@@ -1,8 +1,6 @@
 #!/bin/sh
 
 prefix="dns-fwd-avail-set"
-sshKeyValues="@/Users/mw8er/.ssh/id_rsa.pub"
-location="westeurope"
 
 . common.properties
 

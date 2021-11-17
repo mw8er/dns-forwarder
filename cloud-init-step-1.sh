@@ -1,8 +1,6 @@
 #!/bin/sh
 
 prefix="dns-fwd-cloud-init"
-sshKeyValues="@/Users/mw8er/.ssh/id_rsa.pub"
-location="westeurope"
 
 . common.properties
 

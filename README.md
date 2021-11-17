@@ -1,104 +1,83 @@
-# DNS Forwarder
+# High available DNS Forwarder
 
-[DNS Forwarder with Cloud-Init](cloud-init.md)
-[High Availability](high-availability.md)
+This repository covers three topics
+* Setting up a virtual machine with cloud init
+* Setting up a DNS forwarder inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder) ... as mentioned above: with cloud init
+* Improving the resiliency of the DNS forwarder, from one virtual machine (VM) to availability set to VM scale set (VMSS) and VMSS with availability zones. (skipping the multi-region scenario)
 
-This template shows how to create a DNS server that forwards queries to Azure's internal DNS servers so that hostnames for VMs in the virtual network can be resolved from outside the network.
-
-As illustrated below, this is useful for doing hostname resolution between virtual networks or from on-premise machines to Azure. See [Name resolution using your own DNS server](https://azure.microsoft.com/documentation/articles/virtual-networks-name-resolution-for-vms-and-role-instances/#name-resolution-using-your-own-dns-server) for more details of how DNS resolution work in Azure.
+## Why DNS forwarder?
+As illustrated below, a DNS forwarder is useful for doing hostname resolution between virtual networks or from on-premise machines to Azure. See [Name resolution using your own DNS server](https://azure.microsoft.com/documentation/articles/virtual-networks-name-resolution-for-vms-and-role-instances/#name-resolution-using-your-own-dns-server) for more details of how DNS resolution work in Azure.
 
 ![Hybrid-scenario DNS](images/hybrid-scenario.png)
 
-In addition to that, this template also covers aspects of high availabiltiy for virtual machines. Since the dns forwarder is used by on-prem as well as cloud resources, it is obvious to make it resilent.
+# Cloud init
+The setup of the DNS forwarder is covered in (cloud-init.yaml).
+The first block ensures that the current image is updated and upgraded (including a reboot if required). After that follows the installation of *bind9*. Then we add the example configuration of *bind9* and store it in the file */etc/bind/named.conf.options*. More on that in the following subsection. Finally the cloud init closes with restarting he *bind9* service.
 
-The template is inspired by [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder).
+## *bind9* configuration
+The acl goodclients contains the IP addresses and names that are allowed to use the DNS forwarder.
+*options* contains the configuration of the default target of the DNS forwarder, the *Azure DNS*.
+Then follows configuration of the zone *azure.example.com*  which also gets forwarded to the *Azure DNS*. This is necessary since *example.com* in general is forwarded to an *non-Azure DNS*.
 
-For private endpoints consider reading [DNS Integration Scenarios](https://github.com/dmauser/PrivateLink/tree/master/DNS-Integration-Scenarios) by Daniel Mauser.
+# Preparation
+After checking out the repository. Upen the file *common.properties* and adjust the value of *sshKeyValues* to match your ssh key.
+In addtion, you may want to adjust the value of *location*.
+
+# Setup
+The common setup is covered in the script *common.sh*, i.e.
+- a resource group
+- a virtual network with two subnets, one for Azure Bastion and the other for the actual DNS forwarder.
+- an Azure Bastion host (incl. a public ip) to provide to the DNS forwarder without public ip
+- an NAT gateway (incl. a public ip) to ensure connecivity form the DNS forwarder to the internet.
+- a NSG allowing the port (53) for DNS
+- two private DNS zones, each with one entry, to be able to verify the DNS forwarder
 
 
+# Single VM
+To setup a single VM and to verify the cloud-init setup run the shell script *cloud-init-step-1.sh*.
 
-## Step 1
-[![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy-1.json) 
+Once the script is finished you can log in to the VM via Azure Bastion.
+There you can do the following steps:
+- *sudo systemctl status bind9* to verify that the *bind9* service is running
+- *cat /etc/bind/named.conf.options* to verify that the configuration of *bind9* is as expected.
+- *nslookup succeed.azure.example.com* to verify the connection of the private DNS zone *azure.example.com*. The result should be *192.168.42.42*.
+- *nslookup fail.onprem.example.com* to verify the connection of the private DNS zone *onprem.example.com*. The result should be *10.10.42.42*.
 
-Deploy virtual machines (dns-forwarder and test) with all the required resources into two virtual networks. Setup a private DNS zone with entries for the virtual machines.
+After that you're good to run the shell script *cloud-init-step-2.sh*.
+This script updates the DNS of your virtual network and restarts the VM. After that you can verify the functionality of your DNS forwarder.
 
-Before continuing with step 2, wait for approximately 5 minutes to ensure that the dns-forwarder vm was able to run it's setup via cloud-init.
-```
-ssh azureuser@<public-ip-of-dns-forwarder>
-sudo systemctl status bind9
-```
+- *sudo systemctl status bind9* to verify that the *bind9* service is running.
+- *nslookup succeed.azure.example.com* to verify the connection of the private DNS zone *azure.example.com*. The result should be *192.168.42.42*.
+- *nslookup fail.onprem.example.com* to verify the connection of the private DNS zone *onprem.example.com*. The result should be *server can't find fail.onprem.example.com: NXDOMAIN*. Due to the DNS forwarder, the zone *onprem.example.com* is resolved now like the zone *example.com* instead of the Azure DNS.
 
-The *bind9* service should be up and running before continuing with step 2.
+Since the DNS forwarder, is a critical part of your Azure footprint, you should consider to make it more resilient.
 
-## Step 2
-[![Deploy To Azure](https://raw.githubusercontent.com/mw8er/dns-forwarder/main/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fmw8er%2Fdns-forwarder%2Fmain%2Fazuredeploy-2.json) 
+# Availability Set
+Using an availability set is the first step towards more resiliency. To setup an availability set (with the verified  cloud-init setup) run the shell script *availability-set-step-1.sh*.
 
-Adjust the virtual networks to use the dns-forwarder virtual machine as dns server.
+Once the script is finished you can log in to the VMs via Azure Bastion, and verify that everything is working as expected as in the single VM setup.
 
-Why step 2? When using the new dns-forwarder vm as dns server from the beginning, the setup of the dns-forwarder fails.
+After that you're good to run the shell script *availability-set-step-2.sh*.
+This script updates the DNS of your virtual network and restarts the VMs. After that you can verify the functionality of your DNS forwarder as in the single VM setup.
 
-## Step 3
-Restart the virtual machines and check dns resolution.
+# Virtual Machine Scale Set
+Using an virtual machine scale set (VMSS) is the  step towards more resiliency. To setup a VMSS (with the verified  cloud-init setup) run the shell script *vmss-step-1.sh*.
 
-> Virtual machines within this virtual network must be restarted to utilize the updated DNS server settings.
+Once the script is finished you can log in to the VMs via Azure Bastion, and verify that everything is working as expected as in the single VM setup.
 
-## Details
-Inspired 
+After that you're good to run the shell script *vmss-step-2.sh*.
+This script updates the DNS of your virtual network and restarts the VMs. After that you can verify the functionality of your DNS forwarder as in the single VM setup.
 
-This template shows how to create a DNS server that forwards queries to Azure's internal DNS servers so that hostnames for VMs in the virtual network can be resolved from outside the network.
+# Availability Zones
+The final step within a single region is the usage of availabilty zones. To setup a VMSS with availability zones (with the verified  cloud-init setup) run the shell script *availability-zones-step-1.sh*.
 
-In contrast to [azure-quickstart-templates/demos/dns-forwarder](https://github.com/Azure/azure-quickstart-templates/tree/master/demos/dns-forwarder) this template employs a cloud-init file instead of a shell script to setup the DNS service.
+Once the script is finished you can log in to the VMs via Azure Bastion, and verify that everything is working as expected as in the single VM setup.
 
-Nearly all queries are forwarded to Azure's internal DNS servers so that hostnames for VMs in the virtual network can be resolved from outside the network.
-```
-options {
-    directory "/var/cache/bind";
-    allow-query { goodclients; };
-    forwarders {
-        168.63.129.16;
-    };
-    forward only;
-    dnssec-enable yes;
-    dnssec-validation yes;
-    auth-nxdomain no;    # conform to RFC1035
-    listen-on { any; };
-};
-```
+After that you're good to run the shell script *availability-zones-step-2.sh*.
+This script updates the DNS of your virtual network and restarts the VMs. After that you can verify the functionality of your DNS forwarder as in the single VM setup.
 
-However, queries about the zone example.com are forwarded to Cloudflare's DNS 1.1.1.1. This way your on-premises names are resolved.
-```
-zone "example.com" {
-    type forward;
-    forward only;
-    forwarders {
-        1.1.1.1;
-        1.0.0.1;
-        2606:4700:4700::1111;
-        2606:4700:4700::1001;
-    };
-};
-```
+# Multiple Regions
+For multiple regions, there are mainly two things to consider:
+First, for each region you should decide how to setup that region. Each of the options from above is valid, but regions might have different restrictions, e.g. availability zones not being available.
 
-The exception are quries about the zone azure.example.com which again are  forwarded to Azure's internal DNS servers.
-```
-zone "azure.example.com" {
-    type forward;
-    forward only;
-    forwarders {
-        168.63.129.16;
-    };
-};
-```
-
-How to use this cloud-init template?
-Adjust the file *cloud-init.yaml*
-1. Adjust the name on-premisses zone, here: *example.com*.
-2. Adjust the ip addresses of your on-premisses DNS servers, here: *1.1.1.1*, *1.0.0.1*, *2606:4700:4700::1111* and *2606:4700:4700::1001*.
-3. Repeat steps 1. and 2. for further on-premisses zones
-4. Adjust the name of azure sub-zones of your on-premisses zones, here: *azure.example.com* or remove that block.
-5. Repeat steps 4. for azure sub-zones of your on-premisses zones
-6. Adjust yout good clients list according to your needs, here: *10.0.0.0/8*, *172.16.0.0/12*, *192.168.0.0/16*, *localhost* and *localnets*.
-
-In case you would like to verify it in your subscription, please update the script test.sh to match your situation, i.e. the prefix and the location of your public ssh-key.
-
-Including cloud-init in the arm template as mentioned on [ARM Templates and Cloud Init by Ken Muse](https://www.wintellect.com/arm-templates-and-cloud-init/).
+Second, you should decide about how to connect the two (or more) regions. In case of DNS forwarder, we simply list the additional IP addresses in the virtual networks or the firewall proxy.

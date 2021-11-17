@@ -1,7 +1,6 @@
 #!/bin/sh
 
 prefix="dns-fwd-avail-set"
-location="westeurope"
 
 . common.properties
 
