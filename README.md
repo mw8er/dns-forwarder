@@ -81,3 +81,6 @@ For multiple regions, there are mainly two things to consider:
 First, for each region you should decide how to setup that region. Each of the options from above is valid, but regions might have different restrictions, e.g. availability zones not being available.
 
 Second, you should decide about how to connect the two (or more) regions. In case of DNS forwarder, we simply list the additional IP addresses in the virtual networks or the firewall proxy.
+
+# Enterprise Scenario
+In an enterprise scenario, the VNet of the DNS forwarder might a spoke in an hub-and-spoke (traditional or virtual WAN) setup. In that case, you could replace the NAT gateway with the (Azure) firewall in the hub.
