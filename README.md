@@ -1,3 +1,7 @@
+**Disclaimer - DNS Part deprecated soon due to [Azure DNS Private Resolver](https://azure.microsoft.com/en-us/updates/public-preview-azure-dns-private-resolver-hybrid-name-resolution-and-conditional-forwarding/)**
+
+The repository is still usefull as an example for cloud init and highly availability.
+
 # High available DNS Forwarder
 
 This repository covers three topics
